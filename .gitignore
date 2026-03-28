@@ -10,3 +10,4 @@ arcline-billing
 *.db
 *.db-shm
 *.db-wal
+billing
