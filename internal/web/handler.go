@@ -417,7 +417,7 @@ func (h *Handler) DashboardGET(w http.ResponseWriter, r *http.Request) {
 		flash = "Checkout was cancelled. No charge was made."
 	}
 	if r.URL.Query().Get("cancelled") == "1" {
-		flash = "Your subscription has been cancelled."
+		flash = "Your subscription has been cancelled and will not renew. You retain access until the end of the current billing period."
 	}
 	if r.URL.Query().Get("error") == "cancel_failed" {
 		flash = "Could not cancel subscription. Please contact support."
@@ -597,7 +597,7 @@ func (h *Handler) WebhookPOST(w http.ResponseWriter, r *http.Request) {
 
 	switch event.Type {
 	case "checkout.session.completed":
-		if err := payments.HandleCheckoutCompleted(h.DB, event.Data.Raw); err != nil {
+		if err := payments.HandleCheckoutCompleted(h.DB, h.Stripe, event.Data.Raw); err != nil {
 			slog.Error("webhook: checkout.session.completed", "err", err)
 		}
 	case "invoice.paid":
@@ -643,10 +643,10 @@ func (h *Handler) CancelPOST(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now().UTC().Format(time.RFC3339)
 	_, _ = h.DB.Exec(
-		`UPDATE subscriptions SET status = 'cancelled', updated_at = ? WHERE stripe_subscription_id = ?`,
+		`UPDATE subscriptions SET status = 'cancelling', updated_at = ? WHERE stripe_subscription_id = ?`,
 		now, stripeSubID,
 	)
 
-	slog.Info("subscription cancelled", "customer_id", customerID, "stripe_sub_id", stripeSubID)
+	slog.Info("subscription scheduled for cancellation", "customer_id", customerID, "stripe_sub_id", stripeSubID)
 	http.Redirect(w, r, "/dashboard?cancelled=1", http.StatusSeeOther)
 }

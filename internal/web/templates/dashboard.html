@@ -48,9 +48,9 @@
           </div>
           {{if .Subscription.CurrentPeriodEnd}}
           <div class="status-row">
-            <span class="status-row__label">next billing date</span>
+            <span class="status-row__label">{{if eq .Subscription.Status "cancelling"}}access until{{else}}next billing date{{end}}</span>
             <span class="status-row__dots"></span>
-            <span class="status-row__value">{{.Subscription.CurrentPeriodEnd}}</span>
+            <span class="status-row__value">{{.Subscription.CurrentPeriodEnd | fmtDate}}</span>
           </div>
           {{end}}
         </div>

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"time"
 
@@ -43,6 +44,17 @@ func ConfigFromEnv() Config {
 // Ready reports whether the required Stripe credentials are set.
 func (c Config) Ready() bool {
 	return c.SecretKey != "" && c.WebhookSecret != ""
+}
+
+// PlanName returns the human-readable plan key for a Stripe price ID,
+// or an empty string if the price ID isn't in the configured map.
+func (c Config) PlanName(priceID string) string {
+	for name, id := range c.PriceIDs {
+		if id == priceID {
+			return name
+		}
+	}
+	return ""
 }
 
 // CreateCustomer creates a Stripe customer and returns the Stripe customer ID.
@@ -90,10 +102,13 @@ func CreateCheckoutSession(
 	return s.URL, nil
 }
 
-// CancelSubscription cancels a Stripe subscription by ID.
+// CancelSubscription schedules a Stripe subscription to cancel at the end of
+// the current billing period rather than immediately.
 func CancelSubscription(stripeSubID string) error {
-	params := &stripelib.SubscriptionCancelParams{}
-	_, err := subscription.Cancel(stripeSubID, params)
+	params := &stripelib.SubscriptionParams{
+		CancelAtPeriodEnd: stripelib.Bool(true),
+	}
+	_, err := subscription.Update(stripeSubID, params)
 	if err != nil {
 		return fmt.Errorf("stripe cancel subscription: %w", err)
 	}
@@ -101,7 +116,7 @@ func CancelSubscription(stripeSubID string) error {
 }
 
 // HandleCheckoutCompleted processes a checkout.session.completed webhook event.
-func HandleCheckoutCompleted(db *sql.DB, raw json.RawMessage) error {
+func HandleCheckoutCompleted(db *sql.DB, cfg Config, raw json.RawMessage) error {
 	var cs stripelib.CheckoutSession
 	if err := json.Unmarshal(raw, &cs); err != nil {
 		return fmt.Errorf("unmarshal checkout session: %w", err)
@@ -119,15 +134,28 @@ func HandleCheckoutCompleted(db *sql.DB, raw json.RawMessage) error {
 	var customerID int64
 	fmt.Sscanf(customerIDStr, "%d", &customerID)
 
+	// Fetch the full subscription to get the price ID and plan name.
+	priceID := ""
+	planName := ""
+	sub, err := subscription.Get(cs.Subscription.ID, nil)
+	if err != nil {
+		slog.Warn("checkout completed: fetch subscription from stripe", "err", err)
+	} else if len(sub.Items.Data) > 0 {
+		priceID = sub.Items.Data[0].Price.ID
+		planName = cfg.PlanName(priceID)
+	}
+
 	now := time.Now().UTC().Format(time.RFC3339)
-	_, err := db.Exec(
+	_, err = db.Exec(
 		`INSERT INTO subscriptions
 			(customer_id, stripe_subscription_id, stripe_price_id, plan_name, status, current_period_end, created_at, updated_at)
 		VALUES (?, ?, ?, ?, 'active', '', ?, ?)
 		ON CONFLICT(stripe_subscription_id) DO UPDATE SET
 			status = 'active',
+			stripe_price_id = excluded.stripe_price_id,
+			plan_name = excluded.plan_name,
 			updated_at = excluded.updated_at`,
-		customerID, cs.Subscription.ID, "", "", now, now,
+		customerID, cs.Subscription.ID, priceID, planName, now, now,
 	)
 	return err
 }
