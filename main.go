@@ -120,6 +120,24 @@ func main() {
 		}
 	}()
 
+	// Background job: purge expired sessions and password reset tokens every 24 hours.
+	go func() {
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if err := db.PurgeExpired(database); err != nil {
+					slog.Error("purge expired rows", "err", err)
+				} else {
+					slog.Info("purged expired sessions and reset tokens")
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
 	<-ctx.Done()
 	stop()
 	slog.Info("shutting down")
