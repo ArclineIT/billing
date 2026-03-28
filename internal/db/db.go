@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -25,6 +26,18 @@ func Open(path string) (*sql.DB, error) {
 
 	slog.Info("database ready", "path", path)
 	return db, nil
+}
+
+// PurgeExpired deletes expired sessions and used/expired password reset tokens.
+func PurgeExpired(database *sql.DB) error {
+	now := time.Now().UTC().Format(time.RFC3339)
+	if _, err := database.Exec(`DELETE FROM sessions WHERE expires_at < ?`, now); err != nil {
+		return fmt.Errorf("purge sessions: %w", err)
+	}
+	if _, err := database.Exec(`DELETE FROM password_resets WHERE expires_at < ? OR used = 1`, now); err != nil {
+		return fmt.Errorf("purge password_resets: %w", err)
+	}
+	return nil
 }
 
 func runSchema(db *sql.DB) error {
