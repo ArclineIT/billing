@@ -1,0 +1,49 @@
+{{template "base" .}}
+
+{{define "title"}}Sign In — Arcline IT Client Portal{{end}}
+
+{{define "content"}}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-card__header">
+      <span class="auth-card__prompt">$ arcline-billing --login</span>
+    </div>
+    <div class="auth-card__body">
+      <h1 class="auth-card__title">Sign in to your account</h1>
+
+      {{if .Error}}
+      <div class="alert alert--error">
+        {{if eq .Error "invalid_credentials"}}Invalid email or password.
+        {{else if eq .Error "missing_fields"}}Please fill in all fields.
+        {{else if eq .Error "server_error"}}A server error occurred. Please try again.
+        {{else}}An error occurred. Please try again.{{end}}
+      </div>
+      {{end}}
+
+      {{if eq (index . "reset") "1"}}
+      <div class="alert alert--ok">Password updated. You can now sign in.</div>
+      {{end}}
+
+      <form method="POST" action="/login" class="form">
+        <div class="form__group">
+          <label class="form__label" for="email">Email</label>
+          <input class="form__input" type="email" id="email" name="email"
+                 autocomplete="email" required placeholder="you@example.com">
+        </div>
+        <div class="form__group">
+          <label class="form__label" for="password">Password</label>
+          <input class="form__input" type="password" id="password" name="password"
+                 autocomplete="current-password" required placeholder="••••••••">
+        </div>
+        <button class="btn btn--primary btn--full" type="submit">Sign in</button>
+      </form>
+
+      <div class="auth-card__links">
+        <a href="/reset" class="auth-card__link">Forgot password?</a>
+        <span class="auth-card__sep">·</span>
+        <a href="/register" class="auth-card__link">Create account</a>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

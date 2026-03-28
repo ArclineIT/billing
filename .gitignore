@@ -1,0 +1,12 @@
+# Go build output
+arcline-billing
+*.test
+*.out
+
+# Environment — never commit real credentials
+.env
+
+# SQLite database
+*.db
+*.db-shm
+*.db-wal
