@@ -4,6 +4,7 @@
 
 {{define "nav-actions"}}
 <form method="POST" action="/logout" style="display:inline;">
+  <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
   <button class="btn btn--ghost btn--sm" type="submit">logout</button>
 </form>
 {{end}}
@@ -60,6 +61,7 @@
       <div class="dash-actions">
         <form method="POST" action="/cancel"
               onsubmit="return confirm('Are you sure you want to cancel your subscription? This cannot be undone.')">
+          <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
           <button class="btn btn--danger btn--sm" type="submit">cancel subscription</button>
         </form>
       </div>
@@ -109,8 +111,8 @@
             <tbody>
               {{range .Invoices}}
               <tr class="inv-table__row">
-                <td class="inv-table__td inv-table__td--muted">{{.CreatedAt | slice 0 10}}</td>
-                <td class="inv-table__td inv-table__td--muted">{{.PeriodStart | slice 0 10}} – {{.PeriodEnd | slice 0 10}}</td>
+                <td class="inv-table__td inv-table__td--muted">{{.CreatedAt | fmtDate}}</td>
+                <td class="inv-table__td inv-table__td--muted">{{.PeriodStart | fmtDate}} – {{.PeriodEnd | fmtDate}}</td>
                 <td class="inv-table__td inv-table__td--right">{{.AmountDisplay}}</td>
                 <td class="inv-table__td"><span class="status-badge status-badge--{{.Status}}">{{.Status}}</span></td>
                 <td class="inv-table__td">

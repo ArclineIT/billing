@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"embed"
 	"errors"
+	"fmt"
 	"html/template"
 	"io"
 	"log/slog"
@@ -126,6 +127,7 @@ type dashboardData struct {
 	Subscription *subscriptionRow
 	Invoices     []invoiceRow
 	Flash        string
+	CSRFToken    string
 }
 
 // ---- DB helpers ----
@@ -181,37 +183,16 @@ func loadRecentInvoices(db *sql.DB, customerID int64) ([]invoiceRow, error) {
 	return result, rows.Err()
 }
 
+func validEmail(s string) bool {
+	at := strings.Index(s, "@")
+	return at > 0 && at < len(s)-1 && strings.Contains(s[at+1:], ".")
+}
+
 func formatCurrency(dollars, cents int64, currency string) string {
 	if currency == "USD" || currency == "" {
-		return "$" + itoa(dollars) + "." + pad2(cents)
+		return fmt.Sprintf("$%d.%02d", dollars, cents)
 	}
-	return itoa(dollars) + "." + pad2(cents) + " " + currency
-}
-
-func itoa(n int64) string {
-	if n == 0 {
-		return "0"
-	}
-	s := ""
-	neg := n < 0
-	if neg {
-		n = -n
-	}
-	for n > 0 {
-		s = string(rune('0'+n%10)) + s
-		n /= 10
-	}
-	if neg {
-		s = "-" + s
-	}
-	return s
-}
-
-func pad2(n int64) string {
-	if n < 10 {
-		return "0" + itoa(n)
-	}
-	return itoa(n)
+	return fmt.Sprintf("%d.%02d %s", dollars, cents, currency)
 }
 
 // ---- session cookie helpers ----
@@ -265,14 +246,21 @@ func (h *Handler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) LoginGET(w http.ResponseWriter, r *http.Request) {
+	token := ensureCSRFToken(w, r, sessionSecure())
 	h.ts.render(w, "login.html", map[string]any{
-		"Error": r.URL.Query().Get("error"),
+		"Error":     r.URL.Query().Get("error"),
+		"reset":     r.URL.Query().Get("reset"),
+		"CSRFToken": token,
 	})
 }
 
 func (h *Handler) LoginPOST(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if !validateCSRF(r) {
+		http.Error(w, "invalid request", http.StatusForbidden)
 		return
 	}
 
@@ -313,14 +301,20 @@ func (h *Handler) LoginPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) RegisterGET(w http.ResponseWriter, r *http.Request) {
+	token := ensureCSRFToken(w, r, sessionSecure())
 	h.ts.render(w, "register.html", map[string]any{
-		"Error": r.URL.Query().Get("error"),
+		"Error":     r.URL.Query().Get("error"),
+		"CSRFToken": token,
 	})
 }
 
 func (h *Handler) RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if !validateCSRF(r) {
+		http.Error(w, "invalid request", http.StatusForbidden)
 		return
 	}
 
@@ -332,6 +326,10 @@ func (h *Handler) RegisterPOST(w http.ResponseWriter, r *http.Request) {
 
 	if firstName == "" || lastName == "" || email == "" || password == "" {
 		http.Redirect(w, r, "/register?error=missing_fields", http.StatusSeeOther)
+		return
+	}
+	if !validEmail(email) {
+		http.Redirect(w, r, "/register?error=invalid_email", http.StatusSeeOther)
 		return
 	}
 	if password != confirm {
@@ -416,22 +414,41 @@ func (h *Handler) DashboardGET(w http.ResponseWriter, r *http.Request) {
 	case "cancelled":
 		flash = "Checkout was cancelled. No charge was made."
 	}
-	if r.URL.Query().Get("cancelled") == "1" {
+	switch r.URL.Query().Get("cancelled") {
+	case "1":
 		flash = "Your subscription has been cancelled and will not renew. You retain access until the end of the current billing period."
 	}
-	if r.URL.Query().Get("error") == "cancel_failed" {
+	switch r.URL.Query().Get("error") {
+	case "cancel_failed":
 		flash = "Could not cancel subscription. Please contact support."
+	case "already_cancelling":
+		flash = "Your subscription is already scheduled for cancellation."
+	case "no_subscription":
+		flash = "No active subscription found."
+	case "already_subscribed":
+		flash = "You already have an active subscription."
 	}
+
+	csrfToken := ensureCSRFToken(w, r, sessionSecure())
 
 	h.ts.render(w, "dashboard.html", dashboardData{
 		Customer:     c,
 		Subscription: sub,
 		Invoices:     invoices,
 		Flash:        flash,
+		CSRFToken:    csrfToken,
 	})
 }
 
 func (h *Handler) LogoutPOST(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if !validateCSRF(r) {
+		http.Error(w, "invalid request", http.StatusForbidden)
+		return
+	}
 	cookie, err := r.Cookie("session")
 	if err == nil {
 		_ = auth.DeleteSession(h.DB, cookie.Value)
@@ -441,15 +458,21 @@ func (h *Handler) LogoutPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ResetGET(w http.ResponseWriter, r *http.Request) {
+	token := ensureCSRFToken(w, r, sessionSecure())
 	h.ts.render(w, "reset-request.html", map[string]any{
-		"Sent":  r.URL.Query().Get("sent"),
-		"Error": r.URL.Query().Get("error"),
+		"Sent":      r.URL.Query().Get("sent"),
+		"Error":     r.URL.Query().Get("error"),
+		"CSRFToken": token,
 	})
 }
 
 func (h *Handler) ResetPOST(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if !validateCSRF(r) {
+		http.Error(w, "invalid request", http.StatusForbidden)
 		return
 	}
 
@@ -480,10 +503,12 @@ func (h *Handler) ResetPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ResetConfirmGET(w http.ResponseWriter, r *http.Request) {
-	token := r.PathValue("token")
+	pathToken := r.PathValue("token")
+	csrfToken := ensureCSRFToken(w, r, sessionSecure())
 	h.ts.render(w, "reset-confirm.html", map[string]any{
-		"Token": token,
-		"Error": r.URL.Query().Get("error"),
+		"Token":     pathToken,
+		"Error":     r.URL.Query().Get("error"),
+		"CSRFToken": csrfToken,
 	})
 }
 
@@ -492,6 +517,10 @@ func (h *Handler) ResetConfirmPOST(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if !validateCSRF(r) {
+		http.Error(w, "invalid request", http.StatusForbidden)
 		return
 	}
 
@@ -549,6 +578,30 @@ func (h *Handler) CheckoutGET(w http.ResponseWriter, r *http.Request) {
 	priceID := r.URL.Query().Get("plan")
 	if priceID == "" {
 		http.Error(w, "missing plan parameter", http.StatusBadRequest)
+		return
+	}
+
+	// Reject price IDs not in the configured set.
+	validPrice := false
+	for _, id := range h.Stripe.PriceIDs {
+		if id == priceID {
+			validPrice = true
+			break
+		}
+	}
+	if !validPrice {
+		http.Error(w, "invalid plan", http.StatusBadRequest)
+		return
+	}
+
+	// Block customers who already have an active or cancelling subscription.
+	var existingCount int
+	_ = h.DB.QueryRow(
+		`SELECT COUNT(*) FROM subscriptions WHERE customer_id = ? AND status IN ('active', 'cancelling')`,
+		customerID,
+	).Scan(&existingCount)
+	if existingCount > 0 {
+		http.Redirect(w, r, "/dashboard?error=already_subscribed", http.StatusSeeOther)
 		return
 	}
 
@@ -620,18 +673,31 @@ func (h *Handler) WebhookPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CancelPOST(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if !validateCSRF(r) {
+		http.Error(w, "invalid request", http.StatusForbidden)
+		return
+	}
+
 	customerID := auth.CustomerIDFromContext(r.Context())
 
-	var stripeSubID string
+	var stripeSubID, subStatus string
 	err := h.DB.QueryRow(
-		`SELECT stripe_subscription_id FROM subscriptions
-		WHERE customer_id = ? AND status = 'active'
+		`SELECT stripe_subscription_id, status FROM subscriptions
+		WHERE customer_id = ? AND status IN ('active', 'cancelling')
 		ORDER BY created_at DESC LIMIT 1`,
 		customerID,
-	).Scan(&stripeSubID)
+	).Scan(&stripeSubID, &subStatus)
 	if err != nil {
 		slog.Error("cancel: find subscription", "err", err)
 		http.Redirect(w, r, "/dashboard?error=no_subscription", http.StatusSeeOther)
+		return
+	}
+	if subStatus == "cancelling" {
+		http.Redirect(w, r, "/dashboard?error=already_cancelling", http.StatusSeeOther)
 		return
 	}
 

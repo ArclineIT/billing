@@ -23,6 +23,7 @@
       {{end}}
 
       <form method="POST" action="/reset/{{.Token}}" class="form">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="form__group">
           <label class="form__label" for="password">New password <span class="form__hint">(min. 8 characters)</span></label>
           <input class="form__input" type="password" id="password" name="password"

@@ -25,6 +25,7 @@
       {{end}}
 
       <form method="POST" action="/login" class="form">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="form__group">
           <label class="form__label" for="email">Email</label>
           <input class="form__input" type="email" id="email" name="email"

@@ -17,12 +17,14 @@
         {{else if eq .Error "password_mismatch"}}Passwords do not match.
         {{else if eq .Error "password_too_short"}}Password must be at least 8 characters.
         {{else if eq .Error "email_taken"}}An account with that email already exists.
+        {{else if eq .Error "invalid_email"}}Please enter a valid email address.
         {{else if eq .Error "server_error"}}A server error occurred. Please try again.
         {{else}}An error occurred. Please try again.{{end}}
       </div>
       {{end}}
 
       <form method="POST" action="/register" class="form">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="form__row">
           <div class="form__group">
             <label class="form__label" for="first_name">First name</label>
