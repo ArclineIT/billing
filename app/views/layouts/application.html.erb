@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title><%= content_for?(:title) ? yield(:title) : "Arcline Client Portal" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#05122C">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <%# Applies a stored theme choice before the first paint. %>
+    <%= javascript_tag nonce: true do %>
+      try { const theme = localStorage.getItem("theme"); if (theme) document.documentElement.dataset.theme = theme } catch {}
+    <% end %>
+    <%= preload_link_tag "inter-latin.woff2", as: "font", type: "font/woff2", crossorigin: "anonymous" %>
+    <%= preload_link_tag "sora-latin.woff2", as: "font", type: "font/woff2", crossorigin: "anonymous" %>
+    <%= stylesheet_link_tag "fonts", "tokens", "base", "components", "sections", "portal", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <%= render "shared/header" %>
+
+    <main id="main" tabindex="-1">
+      <%= render "shared/flash" %>
+      <%= yield %>
+    </main>
+
+    <%= render "shared/footer" %>
+  </body>
+</html>

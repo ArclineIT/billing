@@ -1,0 +1,12 @@
+<p>Hello,</p>
+
+<p>A password reset was requested for your Arcline IT account.</p>
+
+<p>
+  <%= link_to "Set a new password", edit_password_url(@user.password_reset_token) %>
+  (valid for <%= distance_of_time_in_words(0, @user.password_reset_token_expires_in) %>).
+</p>
+
+<p>If you did not request this, you can safely ignore this email.</p>
+
+<p>&mdash; Arcline IT Support</p>

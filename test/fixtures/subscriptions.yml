@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  stripe_subscription_id: sub_test_one
+  stripe_price_id: price_test_one
+  plan_name: shared_starter
+  status: active
+  current_period_end: 2026-11-09 22:41:51

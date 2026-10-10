@@ -1,0 +1,44 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__grid">
+      <div class="site-footer__brand">
+        <%= link_to root_path, class: "logo", aria: { label: "Arcline home" } do %>
+          <%= render "shared/logo", size: 26 %>
+          <span class="logo__word">Arcline</span>
+        <% end %>
+        <p>Client portal for Arcline IT managed hosting and security customers.</p>
+        <p class="site-footer__place">Enid, Oklahoma. Serving clients across the US.</p>
+      </div>
+
+      <div>
+        <p class="site-footer__title">Portal</p>
+        <ul class="site-footer__links">
+          <% if authenticated? %>
+            <li><%= link_to "Dashboard", dashboard_path %></li>
+          <% else %>
+            <li><%= link_to "Sign in", new_session_path %></li>
+            <li><%= link_to "Create account", new_registration_path %></li>
+          <% end %>
+          <li><%= link_to "Reset password", new_password_path %></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="site-footer__title">Company</p>
+        <ul class="site-footer__links">
+          <li><%= link_to "Support", "https://arclineit.com/contact" %></li>
+          <li><%= link_to "Terms", "https://arclineit.com/tos" %></li>
+          <li><%= link_to "Privacy", "https://arclineit.com/privacy" %></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="site-footer__bottom">
+      <p>&copy; <%= Date.current.year %> Arcline IT LLC</p>
+      <nav aria-label="Legal">
+        <%= link_to "Terms", "https://arclineit.com/tos" %>
+        <%= link_to "Privacy", "https://arclineit.com/privacy" %>
+      </nav>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,106 @@
+<% content_for :title, "Dashboard" %>
+
+<section class="page-header">
+  <div class="container">
+    <p class="eyebrow">Client portal</p>
+    <h1 class="page-header__title">
+      Welcome back, <span class="dash-header__name"><%= @user.first_name %></span>
+    </h1>
+    <p class="lead dash-header__email"><%= @user.email_address %></p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="container">
+    <div class="dash">
+
+      <!-- Subscription -->
+      <section class="dash-section">
+        <h2 class="dash-section__title">subscription</h2>
+
+        <div class="panel">
+          <div class="panel__body">
+            <% if @subscription %>
+              <div class="status-row">
+                <span class="status-row__label">Plan</span>
+                <span class="status-row__dots" aria-hidden="true"></span>
+                <span class="status-row__value"><%= @subscription.plan_name.presence || "Active plan" %></span>
+              </div>
+              <div class="status-row">
+                <span class="status-row__label">Status</span>
+                <span class="status-row__dots" aria-hidden="true"></span>
+                <span class="status-badge status-badge--<%= @subscription.status %>"><%= @subscription.status %></span>
+              </div>
+              <% if @subscription.current_period_end.present? %>
+                <div class="status-row">
+                  <span class="status-row__label"><%= @subscription.cancelling? ? "Access until" : "Next billing date" %></span>
+                  <span class="status-row__dots" aria-hidden="true"></span>
+                  <span class="status-row__value"><%= format_date(@subscription.current_period_end) %></span>
+                </div>
+              <% end %>
+            <% else %>
+              <p class="dash-empty">No active subscription.</p>
+              <p class="dash-empty-sub">
+                <%= link_to "View plans", "https://arclineit.com/pricing", class: "link-arrow" %>
+                to get started.
+              </p>
+            <% end %>
+          </div>
+        </div>
+
+        <% if @subscription&.active? %>
+          <div class="dash-actions">
+            <%= button_to "Cancel subscription", cancel_subscription_path, method: :post,
+                  class: "btn btn--danger btn--sm",
+                  data: { turbo_confirm: "Are you sure you want to cancel your subscription? This cannot be undone." } %>
+          </div>
+        <% end %>
+      </section>
+
+      <!-- Invoices -->
+      <section class="dash-section">
+        <h2 class="dash-section__title">recent invoices</h2>
+
+        <div class="panel">
+          <% if @invoices.any? %>
+            <div class="table-wrap">
+              <table class="inv-table">
+                <thead>
+                  <tr>
+                    <th class="inv-table__th">Date</th>
+                    <th class="inv-table__th">Period</th>
+                    <th class="inv-table__th inv-table__th--right">Amount</th>
+                    <th class="inv-table__th">Status</th>
+                    <th class="inv-table__th">PDF</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @invoices.each do |invoice| %>
+                    <tr class="inv-table__row">
+                      <td class="inv-table__td inv-table__td--muted"><%= format_date(invoice.created_at) %></td>
+                      <td class="inv-table__td inv-table__td--muted"><%= format_date(invoice.period_start) %> – <%= format_date(invoice.period_end) %></td>
+                      <td class="inv-table__td inv-table__td--right"><%= invoice.amount_display %></td>
+                      <td class="inv-table__td"><span class="status-badge status-badge--<%= invoice.status %>"><%= invoice.status %></span></td>
+                      <td class="inv-table__td">
+                        <% if invoice.invoice_pdf_url.present? %>
+                          <%= link_to "Download", invoice.invoice_pdf_url, class: "link-arrow", target: "_blank", rel: "noopener" %>
+                        <% else %>
+                          —
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <div class="panel__body">
+              <p class="dash-empty">No invoices yet.</p>
+            </div>
+          <% end %>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

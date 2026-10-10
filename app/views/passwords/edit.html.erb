@@ -1,0 +1,30 @@
+<% content_for :title, "Set a new password" %>
+
+<section class="section section--tight">
+  <div class="container">
+    <div class="auth">
+      <div class="auth__header">
+        <p class="eyebrow">Client portal</p>
+        <h1 class="auth__title">Set a new password</h1>
+      </div>
+
+      <%= form_with url: password_path(params[:token]), method: :patch, class: "form" do |form| %>
+        <div class="field">
+          <%= form.label :password do %>New password <span class="field__optional">(min. 8 characters)</span><% end %>
+          <%= form.password_field :password, autocomplete: "new-password", required: true,
+                placeholder: "At least 8 characters", minlength: 8, maxlength: 72 %>
+        </div>
+        <div class="field">
+          <%= form.label :password_confirmation, "Confirm new password" %>
+          <%= form.password_field :password_confirmation, autocomplete: "new-password", required: true,
+                placeholder: "Repeat your new password", minlength: 8, maxlength: 72 %>
+        </div>
+        <%= form.submit "Update password", class: "btn btn--primary btn--full" %>
+      <% end %>
+
+      <div class="auth__links">
+        <%= link_to "Back to sign in", new_session_path %>
+      </div>
+    </div>
+  </div>
+</section>

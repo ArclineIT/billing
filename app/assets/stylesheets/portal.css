@@ -1,0 +1,261 @@
+/* Billing-portal components, built on the shared Arcline design tokens.
+   The site chrome (header, footer, page headers, forms, buttons) comes from
+   components.css / sections.css; these are the pieces unique to the portal. */
+
+/* ── Header extras ────────────────────────────────────── */
+
+.site-header__tag {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Turbo renders button_to as a form; keep the button in the flex row. */
+form.button_to {
+  display: contents;
+}
+
+/* ── Auth pages ───────────────────────────────────────── */
+
+.auth {
+  max-width: 26rem;
+  margin-inline: auto;
+}
+
+.auth--wide {
+  max-width: 34rem;
+}
+
+.auth__header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.auth__header .eyebrow {
+  margin-bottom: 0.5rem;
+}
+
+.auth__title {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.auth__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  color: var(--muted);
+  font-size: 0.925rem;
+}
+
+.auth__links a {
+  color: var(--signal-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth__links a:hover {
+  color: var(--ink);
+}
+
+/* The submit sits full-width in the auth card. */
+.form .btn--full {
+  justify-self: stretch;
+}
+
+/* ── Dashboard ────────────────────────────────────────── */
+
+.dash {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+}
+
+.dash-header__name {
+  color: var(--signal-text);
+}
+
+.dash-header__email {
+  color: var(--text);
+}
+
+.dash-section__title {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.dash-section__title::before {
+  content: "// ";
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-weight: 400;
+}
+
+.dash-actions {
+  margin-top: 1rem;
+}
+
+.dash-empty {
+  color: var(--muted);
+}
+
+.dash-empty-sub {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.panel__body {
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+/* ── Status rows ──────────────────────────────────────── */
+
+.status-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-block: 0.55rem;
+  font-size: 0.95rem;
+}
+
+.status-row + .status-row {
+  border-top: 1px solid var(--line);
+}
+
+.status-row__label {
+  min-width: 11rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.status-row__dots {
+  flex: 1;
+  min-width: 1rem;
+  margin-bottom: 3px;
+  border-bottom: 1px dotted var(--rule);
+}
+
+.status-row__value {
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Status badge ─────────────────────────────────────── */
+
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.status-badge--active,
+.status-badge--paid {
+  background: var(--positive-soft);
+  color: var(--positive);
+}
+
+.status-badge--cancelling,
+.status-badge--past_due,
+.status-badge--open {
+  background: var(--caution-soft);
+  color: var(--caution);
+}
+
+.status-badge--cancelled,
+.status-badge--uncollectible {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.status-badge--void {
+  background: var(--sunken);
+  color: var(--muted);
+}
+
+/* ── Invoice table ────────────────────────────────────── */
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.inv-table__th {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.inv-table__th--right {
+  text-align: right;
+}
+
+.inv-table__row:hover {
+  background: var(--signal-soft);
+}
+
+.inv-table__td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  vertical-align: middle;
+}
+
+.inv-table__row:last-child .inv-table__td {
+  border-bottom: 0;
+}
+
+.inv-table__td--muted {
+  color: var(--muted);
+}
+
+.inv-table__td--right {
+  text-align: right;
+}
+
+/* ── Buttons ──────────────────────────────────────────── */
+
+.btn--danger {
+  border-color: var(--danger);
+  background: transparent;
+  color: var(--danger);
+}
+
+.btn--danger:hover {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* ── Footer column count for the portal's slimmer nav ─── */
+
+.site-footer__grid {
+  grid-template-columns: 1.7fr repeat(2, 1fr);
+}
+
+@media (max-width: 860px) {
+  .site-footer__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

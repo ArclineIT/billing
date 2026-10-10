@@ -1,0 +1,11 @@
+Hello,
+
+A password reset was requested for your Arcline IT account.
+
+Open the link below to set a new password (valid for <%= distance_of_time_in_words(0, @user.password_reset_token_expires_in) %>):
+
+<%= edit_password_url(@user.password_reset_token) %>
+
+If you did not request this, you can safely ignore this email.
+
+-- Arcline IT Support

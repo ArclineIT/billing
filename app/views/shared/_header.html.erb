@@ -1,0 +1,33 @@
+<header class="site-header" data-controller="nav">
+  <div class="container site-header__inner">
+    <%= link_to root_path, class: "logo", aria: { label: "Arcline home" } do %>
+      <%= render "shared/logo", size: 28 %>
+      <span class="logo__word">Arcline</span>
+    <% end %>
+    <span class="site-header__tag">Client portal</span>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"
+            data-nav-target="toggle" data-action="nav#toggle">
+      <%= icon :menu, size: 22 %>
+      <span class="visually-hidden">Menu</span>
+    </button>
+
+    <nav class="nav" id="site-nav" aria-label="Main" data-nav-target="menu">
+      <% if authenticated? %>
+        <%= nav_link "Dashboard", dashboard_path %>
+      <% end %>
+
+      <button class="theme-toggle" type="button" data-controller="theme" data-action="theme#toggle">
+        <%= icon :contrast, size: 18 %>
+        <span class="theme-toggle__label">Switch theme</span>
+      </button>
+
+      <% if authenticated? %>
+        <%= button_to "Log out", logout_path, method: :delete, class: "btn btn--ghost btn--sm" %>
+      <% else %>
+        <%= link_to "Sign in", new_session_path, class: "btn btn--ghost btn--sm" %>
+        <%= link_to "Create account", new_registration_path, class: "btn btn--primary btn--sm" %>
+      <% end %>
+    </nav>
+  </div>
+</header>

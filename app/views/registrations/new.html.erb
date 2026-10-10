@@ -1,0 +1,56 @@
+<% content_for :title, "Create account" %>
+
+<section class="section section--tight">
+  <div class="container">
+    <div class="auth auth--wide">
+      <div class="auth__header">
+        <p class="eyebrow">Client portal</p>
+        <h1 class="auth__title">Create your account</h1>
+      </div>
+
+      <%= form_with model: @user, url: registration_path, class: "form" do |form| %>
+        <% if @user.errors.any? %>
+          <div class="form__errors" role="alert">
+            <strong>Please fix the following:</strong>
+            <ul>
+              <% @user.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="form__row">
+          <div class="field">
+            <%= form.label :first_name, "First name" %>
+            <%= form.text_field :first_name, autocomplete: "given-name", required: true, placeholder: "Blake" %>
+          </div>
+          <div class="field">
+            <%= form.label :last_name, "Last name" %>
+            <%= form.text_field :last_name, autocomplete: "family-name", required: true, placeholder: "Ridgway" %>
+          </div>
+        </div>
+        <div class="field">
+          <%= form.label :email_address, "Email" %>
+          <%= form.email_field :email_address, autocomplete: "email", required: true, placeholder: "you@example.com" %>
+        </div>
+        <div class="field">
+          <%= form.label :password do %>Password <span class="field__optional">(min. 8 characters)</span><% end %>
+          <%= form.password_field :password, autocomplete: "new-password", required: true,
+                placeholder: "At least 8 characters", minlength: 8, maxlength: 72 %>
+        </div>
+        <div class="field">
+          <%= form.label :password_confirmation, "Confirm password" %>
+          <%= form.password_field :password_confirmation, autocomplete: "new-password", required: true,
+                placeholder: "Repeat your password", minlength: 8, maxlength: 72 %>
+        </div>
+        <%= form.submit "Create account", class: "btn btn--primary btn--full" %>
+      <% end %>
+
+      <div class="auth__links">
+        <span>Already have an account?</span>
+        <%= link_to "Sign in", new_session_path %>
+      </div>
+    </div>
+  </div>
+</section>

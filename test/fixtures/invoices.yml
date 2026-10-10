@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  stripe_invoice_id: in_test_one
+  amount_cents: 1900
+  currency: usd
+  status: paid
+  invoice_pdf_url: https://example.com/in_test_one.pdf
+  period_start: 2026-10-01 00:00:00
+  period_end: 2026-11-01 00:00:00
