@@ -1,0 +1,40 @@
+# Forgejo Actions - runs on the homelab forge (git.ridgwaysystems.org).
+#
+# The same gates as bin/ci: style, static analysis, dependency audits, tests.
+# They run on every pull request, and again on each branch code is promoted
+# through (dev, qa, staging, production), so a stage never holds code that has
+# not passed them.
+#
+# There is no image build here yet. The forge has one runner, and nothing
+# deploys this app, so an image would be built to be thrown away. Add a build
+# job when the app gets its first environment - website's workflow is the model.
+#
+# `uses:` resolves at data.forgejo.org here, so actions that only live on
+# GitHub are given by full URL, pinned to a commit.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [dev, qa, staging, production]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      RAILS_ENV: test
+    steps:
+      - uses: https://github.com/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: https://github.com/ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          bundler-cache: true
+      - name: Style
+        run: bin/rubocop -f github
+      - name: Brakeman code analysis
+        run: bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error
+      - name: Gem audit
+        run: bin/bundler-audit
+      - name: Importmap audit
+        run: bin/importmap audit
+      - name: Tests
+        run: bin/rails db:test:prepare test
