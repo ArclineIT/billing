@@ -58,14 +58,14 @@ repository history).
 |---|---|---|
 | `PORT` | `3000` | HTTP listen port (the original service used `8082`) |
 | `DATABASE_PATH` | `storage/<env>.sqlite3` | SQLite database file path |
-| `BASE_URL` | — | Public base URL (e.g. `https://client.arclineit.com`) — used for mailer links and Stripe redirect URLs |
+| `BASE_URL` | — | Public base URL (e.g. `https://client.arcline.it`) — used for mailer links and Stripe redirect URLs |
 | `STRIPE_SECRET_KEY` | — | Stripe secret API key |
 | `STRIPE_WEBHOOK_SECRET` | — | Stripe webhook signing secret |
 | `SMTP_HOST` | — | SMTP server hostname |
 | `SMTP_PORT` | `587` | SMTP server port |
 | `SMTP_USER` | — | SMTP username |
 | `SMTP_PASS` | — | SMTP password |
-| `SMTP_FROM` | `support@arclineit.com` | From address for outgoing email |
+| `SMTP_FROM` | `support@arcline.it` | From address for outgoing email |
 
 ### Stripe Price IDs
 
