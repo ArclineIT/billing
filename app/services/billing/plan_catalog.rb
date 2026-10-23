@@ -3,21 +3,12 @@ module Billing
   # price IDs configured via environment variables.
   module PlanCatalog
     ENV_KEYS = {
-      "shared_starter"  => "STRIPE_PRICE_SHARED_STARTER",
-      "shared_pro"      => "STRIPE_PRICE_SHARED_PRO",
-      "shared_business" => "STRIPE_PRICE_SHARED_BUSINESS",
-      "wp_starter"      => "STRIPE_PRICE_WP_STARTER",
-      "wp_pro"          => "STRIPE_PRICE_WP_PRO",
-      "wp_business"     => "STRIPE_PRICE_WP_BUSINESS",
-      "vps_1"           => "STRIPE_PRICE_VPS_1",
-      "vps_2"           => "STRIPE_PRICE_VPS_2",
-      "vps_3"           => "STRIPE_PRICE_VPS_3",
-      "vps_4"           => "STRIPE_PRICE_VPS_4"
+      "managed_security" => "STRIPE_PRICE_MANAGED_SECURITY"
     }.freeze
 
     module_function
 
-    # plan key => Stripe price ID, omitting any tiers that aren't configured.
+    # plan key => Stripe price ID, omitting any plans that aren't configured.
     def prices
       ENV_KEYS.each_with_object({}) do |(plan, env_key), result|
         value = ENV[env_key]

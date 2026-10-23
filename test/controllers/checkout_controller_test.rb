@@ -1,14 +1,14 @@
 require "test_helper"
 
 class CheckoutControllerTest < ActionDispatch::IntegrationTest
-  PRICE_ID = "price_test_starter".freeze
+  PRICE_ID = "price_test_managed_security".freeze
 
   setup do
-    ENV["STRIPE_PRICE_SHARED_STARTER"] = PRICE_ID
+    ENV["STRIPE_PRICE_MANAGED_SECURITY"] = PRICE_ID
   end
 
   teardown do
-    ENV.delete("STRIPE_PRICE_SHARED_STARTER")
+    ENV.delete("STRIPE_PRICE_MANAGED_SECURITY")
   end
 
   test "redirects an unknown plan back to the dashboard" do
