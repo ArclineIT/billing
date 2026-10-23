@@ -69,20 +69,11 @@ repository history).
 
 ### Stripe Price IDs
 
-Configure the price IDs for each plan tier:
+Configure the price ID for each plan:
 
 | Variable | Plan |
 |---|---|
-| `STRIPE_PRICE_SHARED_STARTER` | Shared Hosting — Starter |
-| `STRIPE_PRICE_SHARED_PRO` | Shared Hosting — Pro |
-| `STRIPE_PRICE_SHARED_BUSINESS` | Shared Hosting — Business |
-| `STRIPE_PRICE_WP_STARTER` | WordPress Hosting — Starter |
-| `STRIPE_PRICE_WP_PRO` | WordPress Hosting — Pro |
-| `STRIPE_PRICE_WP_BUSINESS` | WordPress Hosting — Business |
-| `STRIPE_PRICE_VPS_1` | VPS — Tier 1 |
-| `STRIPE_PRICE_VPS_2` | VPS — Tier 2 |
-| `STRIPE_PRICE_VPS_3` | VPS — Tier 3 |
-| `STRIPE_PRICE_VPS_4` | VPS — Tier 4 |
+| `STRIPE_PRICE_MANAGED_SECURITY` | Managed Security Retainer |
 
 ## Stripe Webhooks
 
